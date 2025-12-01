@@ -7,6 +7,7 @@ from robot import Robot
 from utils import Pose, Position, Bounds, Landmark
 import csv
 import pandas as pd
+from decimal import Decimal
 
 if __name__ == "__main__":
     # set up the sim
@@ -25,12 +26,12 @@ if __name__ == "__main__":
             Landmark(Position(15, 30), 3),
             # Landmark(Position(25, 25), 4),
         ],
-        timestep=1.0,
+        timestep=0.1,
     )
     robot = Robot(env)
 
     # set up timekeeping
-    total_seconds = 10
+    total_seconds = 120.0
     total_timesteps = total_seconds / env.DT
     terminal = False
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     sensor_data_history = pd.DataFrame()
 
     # open up the instructions, pop the first
-    with open("./logs/vel_cmd_test.csv", "r") as cmd:
+    with open("./cmds/vel_cmd_example.csv", "r") as cmd:
         # start popping velocity commands
         vel_cmds = csv.reader(cmd)
         next_cmd = next(vel_cmds)  # skip column names
@@ -50,26 +51,21 @@ if __name__ == "__main__":
         # hit it!
         for step in range(int(total_timesteps) + 1):
             # first, sample the environment
-            print()
-            print(f"***TEST AT T{env.time}***")
-            print()
-            gt_meas = robot.take_gt_snapshot()
+            print(f"\n***TIMESTEP T{env.time}***")
             ground_truth_history = pd.concat(
-                [ground_truth_history, gt_meas],
+                [
+                    ground_truth_history,
+                    robot.take_gt_snapshot(),
+                ],
                 ignore_index=True,
             )
-            print("--> Ground Truth Data")
-            print(gt_meas.columns)
-            print(gt_meas.values)
-            print()
-            sensor_meas = robot.take_sensor_measurements()
             sensor_data_history = pd.concat(
-                [sensor_data_history, sensor_meas],
+                [
+                    sensor_data_history,
+                    robot.take_sensor_measurements(),
+                ],
                 ignore_index=True,
             )
-            print("--> Sensor Data")
-            print(sensor_meas.columns)
-            print(sensor_meas.values)
 
             # # retrieve new command if available or passed
             if round(float(next_cmd[0]), 3) <= env.DT * step and not terminal:
@@ -85,5 +81,5 @@ if __name__ == "__main__":
             robot.agent_step_differential(current_lin_vel, current_ang_vel)
 
         # log the results
-        ground_truth_history.to_csv("./logs/groundtruth_logs.csv")
-        sensor_data_history.to_csv("./logs/sensor_logs.csv")
+        ground_truth_history.to_csv("./logs/groundtruth_log.csv")
+        sensor_data_history.to_csv("./logs/sensor_log.csv")

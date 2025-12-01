@@ -224,8 +224,8 @@ class Odometry(SensorInterface):
             A dictionary containing noisy linear and angular velocity estimates.
         """
         # Get the commanded velocities from the robot
-        true_lin_vel = self.robot.last_lin_vel
-        true_ang_vel = self.robot.last_ang_vel
+        true_lin_vel = self.robot.actual_lin_vel
+        true_ang_vel = self.robot.actual_ang_vel
 
         # Add proportional noise
         noisy_lin_vel = random.gauss(

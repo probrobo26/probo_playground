@@ -5,6 +5,16 @@ from enum import Enum
 NEAR_ZERO = 1e-6
 
 
+def floating_mod_zero(n1: float, n2: float):
+    factor = n1 / n2
+    # print(f"{n1} / {n2} = {factor}")
+    # # check if there is a meaningful decimal component
+    # print(
+    #     f"Check if {round(factor, 3)} - {float(round(factor))} < {NEAR_ZERO}: {abs(round(factor, 3) - float(round(factor))) < NEAR_ZERO}"
+    # )
+    return abs(round(factor, 3) - float(round(factor))) < NEAR_ZERO
+
+
 @dataclass(unsafe_hash=True)
 class Position:
     """

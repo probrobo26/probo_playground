@@ -1,8 +1,8 @@
 """ """
 
-from utils import NEAR_ZERO
+from utils import NEAR_ZERO, floating_mod_zero
 from environment import Environment
-from sensors import SensorInterface, LandmarkPinger, GPS
+from sensors import SensorInterface, LandmarkPinger, GPS, Odometry
 
 import math
 import random
@@ -36,6 +36,7 @@ class Robot:
         self.sensors: dict[str, SensorInterface] = {
             "LandmarkPinger": LandmarkPinger(self),
             "GPS": GPS(self),
+            "Odometry": Odometry(self),
         }
 
     # --- Controller Methods ---
@@ -100,7 +101,8 @@ class Robot:
 
         # query all sensors -- won't have all columns every time
         for s in self.sensors.values():
-            if self.env.time % s.interval < NEAR_ZERO:
+            if floating_mod_zero(self.env.time, s.interval):
+                print(f"--> Collecting from {s.name}")
                 measurements = pd.merge(
                     measurements,
                     s.sample(),
