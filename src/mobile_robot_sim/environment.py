@@ -2,7 +2,7 @@
 A simulation environment for a mobile robot operating in two dimensions.
 """
 
-from utils import Position, Pose, BearingRange, Bounds, Landmark
+from .utils import Position, Pose, BearingRange, Bounds, Landmark
 import pandas as pd
 import math
 

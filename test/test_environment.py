@@ -1,8 +1,7 @@
 import pytest
 import math
-from utils import Position, Pose, Bounds, Landmark, BearingRange
-from environment import Environment
-
+from mobile_robot_sim.utils import Position, Pose, Bounds, Landmark, BearingRange
+from mobile_robot_sim.environment import Environment
 
 class TestEnvironmentInitialization:
     """

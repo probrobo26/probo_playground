@@ -2,9 +2,9 @@
 Main file for running the simulator.
 """
 
-from environment import Environment
-from robot import Robot
-from utils import Pose, Position, Bounds, Landmark
+from .environment import Environment
+from .robot import Robot
+from .utils import Pose, Position, Bounds, Landmark
 import csv
 import pandas as pd
 

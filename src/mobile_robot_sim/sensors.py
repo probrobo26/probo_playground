@@ -3,7 +3,7 @@ Contains the abstract base class for sensor classes to inherit from, plus all im
 """
 
 # from robot import Robot
-from utils import BearingRange, Position
+from .utils import BearingRange, Position
 import pandas as pd
 from abc import ABC, abstractmethod
 from typing import Any

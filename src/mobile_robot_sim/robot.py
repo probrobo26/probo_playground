@@ -1,8 +1,8 @@
 """ """
 
-from utils import NEAR_ZERO, floating_mod_zero
-from environment import Environment
-from sensors import SensorInterface, LandmarkPinger, GPS, Odometry
+from .utils import NEAR_ZERO, floating_mod_zero
+from .environment import Environment
+from .sensors import SensorInterface, LandmarkPinger, GPS, Odometry
 
 import math
 import random
