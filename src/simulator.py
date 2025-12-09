@@ -31,7 +31,7 @@ if __name__ == "__main__":
     robot = Robot(env)
 
     # set up timekeeping
-    total_seconds = 120.0
+    total_seconds = 100
     total_timesteps = total_seconds / env.DT
     terminal = False
 
@@ -82,7 +82,8 @@ if __name__ == "__main__":
 
         # log the results
         ground_truth_history.to_csv("./logs/groundtruth_log.csv")
-        pickle.dump(ground_truth_history, open("./logs/groundtruth_logs.pkl", "wb"))
-
         sensor_data_history.to_csv("./logs/sensor_log.csv")
+        pickle.dump(ground_truth_history, open("./logs/groundtruth_logs.pkl", "wb"))
         pickle.dump(sensor_data_history, open("./logs/sensor_logs.pkl", "wb"))
+        pickle.dump(env.info(), open("./logs/env_info.pkl", "wb"))
+        pickle.dump(robot.info(), open("./logs/sensor_info.pkl", "wb"))

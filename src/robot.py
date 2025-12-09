@@ -132,3 +132,65 @@ class Robot:
         # print(env_data.columns)
         # print(env_data.values)
         return env_data
+
+    def info(self) -> pd.DataFrame:
+        """
+        Return a dictionary of frozen environment information.
+        """
+        # set up the table
+        sensor_info = pd.DataFrame(
+            index=pd.RangeIndex(len(self.sensors.values())),
+            columns=["SensorName", "ConstantNoise", "ProportionalNoise"],
+        )
+
+        # iterate through sensors
+        for name, sensor in self.sensors.items():
+            # GPS is very simple: 1 axis of constant noise
+            if isinstance(sensor, GPS):
+                row = pd.DataFrame(
+                    0,
+                    index=pd.RangeIndex(1),
+                    columns=sensor_info.columns,
+                )
+                row["Sensor Name"] = name
+                row["Constant Noise"] = sensor.GPS_NOISE
+            # odom has linear and angular components to consider
+            elif isinstance(sensor, Odometry):
+                # linear
+                lin_row = pd.DataFrame(
+                    0,
+                    index=pd.RangeIndex(1),
+                    columns=sensor_info.columns,
+                )
+                lin_row["Sensor Name"] = name + f"Linear"
+                lin_row["Proportional Noise"] = sensor.LINEAR_NOISE_RATIO
+                # angular
+                ang_row = pd.DataFrame(
+                    0,
+                    index=pd.RangeIndex(1),
+                    columns=sensor_info.columns,
+                )
+                ang_row["Sensor Name"] = name + f"Angular"
+                ang_row["Proportional Noise"] = sensor.ANGULAR_NOISE_RATIO
+            # pinger has independent range and bearing
+            elif isinstance(sensor, LandmarkPinger):
+                # linear
+                range_row = pd.DataFrame(
+                    0,
+                    index=pd.RangeIndex(1),
+                    columns=sensor_info.columns,
+                )
+                range_row["Sensor Name"] = name + f"Range"
+                range_row["Constant Noise"] = sensor.RANGE_PROP_NOISE
+                range_row["Proportional Noise"] = sensor.RANGE_PROP_NOISE
+                # angular
+                bearing_row = pd.DataFrame(
+                    0,
+                    index=pd.RangeIndex(1),
+                    columns=sensor_info.columns,
+                )
+                bearing_row["Sensor Name"] = name + f"Angular"
+                bearing_row["Constant Noise"] = sensor.BEARING_NOISE
+
+        # return
+        return sensor_info

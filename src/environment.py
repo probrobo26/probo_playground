@@ -172,7 +172,7 @@ class Environment:
         return lms
 
     # --- Logging ---
-    def info(self):
+    def info(self) -> dict:
         """
         Return a dictionary of frozen environment information.
         """
