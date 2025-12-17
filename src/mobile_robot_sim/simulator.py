@@ -16,9 +16,11 @@ if __name__ == "__main__":
         dimensions=Bounds(0, 50, 0, 40),
         agent_pose=Pose(Position(0, 0), 0),
         obstacles=[
-            # Bounds(0, 5, 25, 30),
-            # Bounds(5, 10, 10, 15),
-            # Bounds(20, 25, 5, 15),
+            Bounds(15, 25, 8, 12),
+            Bounds(40, 45, 10, 15),
+            Bounds(10, 20, 20, 25),
+            Bounds(15, 20, 30, 35),
+            Bounds(30, 35, 20, 30),
         ],
         landmarks=[
             Landmark(Position(10, 10), 0),
