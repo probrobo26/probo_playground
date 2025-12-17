@@ -260,7 +260,7 @@ class Visualizer:
             alpha=alpha,
         )
 
-        ax.legend()
+        ax.legend(loc="upper right")
         return ax
 
     def draw_all(self):
