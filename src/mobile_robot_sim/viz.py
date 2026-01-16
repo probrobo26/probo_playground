@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import pandas as pd
 import numpy as np
-import re
 from matplotlib.animation import FuncAnimation, PillowWriter
 import pickle
 from pathlib import Path
+from utils import Pose, Landmark
 
 
 class Visualizer:
@@ -84,10 +84,10 @@ class Visualizer:
 
         # Plot landmarks
         for lm in self.env_info["Landmarks"]:
-            # Plot pinging range circle (10m radius)
+            # Plot pinging range circle
             circle = patches.Circle(
                 (lm["pos"]["x"], lm["pos"]["y"]),
-                10,  # 10m radius
+                self.env_info["Pinger Range"],
                 linewidth=1,
                 edgecolor="red",
                 facecolor="red",
@@ -123,8 +123,13 @@ class Visualizer:
         Output a DataFrame of estimated pose data with the following columns:
         Time | x | y | theta
         """
+        # pop the first pose from GT
+        prior = next(self.gt_log.itertuples())
+        pose: Pose = prior.RobotPose
+        x = pose.pos.x
+        y = pose.pos.y
+        theta = pose.theta
         poses = []
-        x, y, theta = 0.0, 0.0, 0.0
         dt = self.env_info["Timestep"]
 
         for row in self.sensor_log.itertuples():
@@ -158,16 +163,11 @@ class Visualizer:
         poses = []
 
         for row in self.gt_log.itertuples():
-            # Parse the RobotPose string (format: X{x}Y{y}T{theta})
-            pose_str = row.RobotPose
-            match = re.match(r"X([-\d.]+)Y([-\d.]+)T([-\d.]+)", pose_str)
-
-            if match:
-                x = float(match.group(1))
-                y = float(match.group(2))
-                theta = float(match.group(3))
-
-                poses.append({"Time": row.Time, "x": x, "y": y, "theta": theta})
+            pose: Pose = row.RobotPose
+            x = pose.pos.x
+            y = pose.pos.y
+            theta = pose.theta
+            poses.append({"Time": row.Time, "x": x, "y": y, "theta": theta})
 
         return pd.DataFrame(poses)
 
@@ -205,7 +205,12 @@ class Visualizer:
         return pd.DataFrame(poses)
 
     def plot_single_trajectory(
-        self, label, pose_table: pd.DataFrame, color="blue", alpha=1.0
+        self,
+        label,
+        pose_table: pd.DataFrame,
+        color="blue",
+        alpha=1.0,
+        scatter=False,
     ):
         """
         Given a DataFrame of robot pose data with the following columns:
@@ -224,9 +229,9 @@ class Visualizer:
             pose_table["y"],
             "-",
             color=color,
-            alpha=alpha,
             linewidth=2,
             label=label,
+            alpha=alpha,
         )
 
         # Plot arrows showing heading at intervals
@@ -247,7 +252,17 @@ class Visualizer:
                 head_length=0.2,
                 fc=color,
                 ec=color,
-                alpha=alpha * 0.7,
+                alpha=alpha * 0.25,
+            )
+        if scatter:
+            ax.scatter(
+                pose_table["x"],
+                pose_table["y"],
+                marker="*",
+                color=color,
+                linewidth=2,
+                label=label,
+                alpha=alpha,
             )
 
         # Mark start and end positions
@@ -295,6 +310,7 @@ class Visualizer:
             "GPS Only",
             self.poses_from_gps(),
             "orange",
+            scatter=True,
         )
         plt.savefig(self.output_path / "dataset_viz.png")
         print("Finished plotting at path: ")
@@ -341,6 +357,7 @@ class Visualizer:
         (odom_line,) = ax.plot(
             [], [], "-", color="red", linewidth=2, label="Dead Reckoning", alpha=0.8
         )
+        (gps_line,) = ax.plot([], [], "-", color="orange", linewidth=2, alpha=0.8)
         gps_scatter = ax.scatter(
             [],
             [],
@@ -355,6 +372,7 @@ class Visualizer:
         # Initialize end marker objects (hidden initially)
         gt_end = ax.plot([], [], "s", color="green", markersize=10, alpha=0)[0]
         odom_end = ax.plot([], [], "s", color="red", markersize=10, alpha=0)[0]
+        gps_end = ax.plot([], [], "s", color="orange", markersize=10, alpha=0)[0]
 
         # Add time display
         time_text = ax.text(
@@ -373,11 +391,21 @@ class Visualizer:
             """Initialize animation"""
             gt_line.set_data([], [])
             odom_line.set_data([], [])
+            gps_line.set_data([], [])
             gps_scatter.set_offsets(np.empty((0, 2)))
             gt_end.set_data([], [])
             odom_end.set_data([], [])
+            gps_end.set_data([], [])
             time_text.set_text("")
-            return gt_line, odom_line, gps_scatter, gt_end, odom_end, time_text
+            return (
+                gt_line,
+                odom_line,
+                gps_line,
+                gps_scatter,
+                gt_end,
+                odom_end,
+                time_text,
+            )
 
         def animate(frame_idx):
             """Update function for each frame"""
@@ -418,6 +446,7 @@ class Visualizer:
                 current_time = gt_poses.iloc[actual_frame]["Time"]
                 gps_up_to_now = gps_poses[gps_poses["Time"] <= current_time]
                 if len(gps_up_to_now) > 0:
+                    gps_line.set_data(gps_up_to_now["x"], gps_up_to_now["y"])
                     gps_scatter.set_offsets(gps_up_to_now[["x", "y"]].values)
 
             return gt_line, odom_line, gps_scatter, gt_end, odom_end, time_text

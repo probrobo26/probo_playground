@@ -8,10 +8,10 @@ from utils import Pose, Position, Bounds, Landmark
 from viz import Visualizer
 import pandas as pd
 from pathlib import Path
-import csv, argparse, pickle
+import csv, argparse, pickle, yaml
 
 if __name__ == "__main__":
-    # set up pathing
+    # set up pathing and argparse
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-y",
@@ -58,35 +58,61 @@ if __name__ == "__main__":
 
     # if not viz only, run the simulator and log the results
     if not VIZ_ONLY:
+        # pull config info
+        with open(CONFIG_PATH, "r") as f:
+            config = yaml.safe_load(f)
+            env_info = config["environment"]
+            robot_info = config["robot"]
+            sensor_info = config["sensors"]
         # set up the sim
+        obstacles = []
+        for dims in env_info["obstacles"]:
+            obstacles.append(
+                Bounds(
+                    dims[0],
+                    dims[1],
+                    dims[2],
+                    dims[3],
+                )
+            )
+        landmarks = []
+        for lm in env_info["landmarks"]:
+            landmarks.append(
+                Landmark(
+                    Position(
+                        lm[0],
+                        lm[1],
+                    ),
+                    len(landmarks),
+                )
+            )
         env = Environment(
-            dimensions=Bounds(0, 50, 0, 40),
-            agent_pose=Pose(Position(0, 0), 0),
-            obstacles=[
-                Bounds(15, 25, 8, 12),
-                Bounds(40, 45, 10, 15),
-                Bounds(10, 20, 20, 25),
-                Bounds(15, 20, 30, 35),
-                Bounds(30, 35, 20, 30),
-            ],
-            landmarks=[
-                Landmark(Position(10, 10), 0),
-                Landmark(Position(10, 40), 1),
-                Landmark(Position(20, 0), 2),
-                Landmark(Position(20, 20), 3),
-                Landmark(Position(30, 10), 4),
-                Landmark(Position(30, 20), 5),
-                Landmark(Position(20, 30), 6),
-                Landmark(Position(40, 30), 7),
-                Landmark(Position(50, 10), 8),
-                Landmark(Position(50, 20), 9),
-            ],
-            timestep=0.1,
+            dimensions=Bounds(
+                0,
+                env_info["width"],
+                0,
+                env_info["height"],
+            ),
+            agent_pose=Pose(
+                Position(
+                    env_info["robot_start"][0],
+                    env_info["robot_start"][1],
+                ),
+                env_info["robot_start"][2],
+            ),
+            obstacles=obstacles,
+            landmarks=landmarks,
+            timestep=env_info["timestep"],
+            lm_range=env_info["pinger_range"],
         )
-        robot = Robot(env)
+        robot = Robot(
+            env,
+            robot_info,
+            sensor_info,
+        )
 
         # set up timekeeping
-        total_seconds = 170
+        total_seconds = env_info["runtime"]
         total_timesteps = total_seconds / env.DT
         terminal = False
 

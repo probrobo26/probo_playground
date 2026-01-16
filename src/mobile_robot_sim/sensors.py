@@ -89,9 +89,10 @@ class GPS(SensorInterface):
     def __init__(
         self,
         robot,
-        name: str = "GPS",
-        interval: float = 2.0,
-        noise: float = 1.0,
+        name,
+        interval,
+        x_noise,
+        y_noise,
     ):
         """
         Initialize an instance of the GPS class.
@@ -103,15 +104,16 @@ class GPS(SensorInterface):
             noise (float): absolute noise for stdev
         """
         super().__init__(name, robot, interval)
-        self.GPS_NOISE = noise
+        self.X_NOISE = x_noise
+        self.Y_NOISE = y_noise
 
     def sample(self) -> pd.DataFrame:
         """
         Take a noisy GPS measurement of robot position.
         """
         gt_pose = self.robot.env.get_gt_robot_pose()
-        x_noisy = random.gauss(gt_pose.pos.x, self.GPS_NOISE)
-        y_noisy = random.gauss(gt_pose.pos.y, self.GPS_NOISE)
+        x_noisy = random.gauss(gt_pose.pos.x, self.X_NOISE)
+        y_noisy = random.gauss(gt_pose.pos.y, self.Y_NOISE)
 
         return pd.DataFrame({self.name: [Position(x_noisy, y_noisy)]})
 
@@ -133,8 +135,13 @@ class LandmarkPinger(SensorInterface):
     def __init__(
         self,
         robot,
-        name: str = "LandmarkPinger",
-        interval: float = 0.5,
+        name,
+        interval,
+        max_range,
+        range_noise,
+        range_prop_noise,
+        bearing_noise,
+        bearing_prop_noise,
     ):
         """
         Initialize an instance of the LandmarkPinger class.
@@ -145,10 +152,11 @@ class LandmarkPinger(SensorInterface):
             interval (float): period between measurements
         """
         super().__init__(name, robot, interval)
-        self.MAX_RANGE = 10.0  # meters
-        self.RANGE_NOISE = 0.1  # meters
-        self.RANGE_PROP_NOISE = 0.02  # meters
-        self.BEARING_NOISE = 0.0872665  # radians
+        self.MAX_RANGE = max_range  # meters
+        self.RANGE_NOISE = range_noise  # meters
+        self.RANGE_PROP_NOISE = range_prop_noise
+        self.BEARING_NOISE = bearing_noise  # radians
+        self.BEARING_PROP_NOISE = bearing_prop_noise  # radians
 
     def sample(self) -> pd.DataFrame:
         """
@@ -196,12 +204,12 @@ class Odometry(SensorInterface):
     def __init__(
         self,
         robot,
-        name: str = "Odometry",
-        interval: float = 0.1,
-        lin_noise: float = 0.05,
-        ang_noise: float = 0.01,
-        linear_noise_ratio: float = 0.10,
-        angular_noise_ratio: float = 0.50,
+        name,
+        interval,
+        lin_noise,
+        ang_noise,
+        linear_noise_ratio,
+        angular_noise_ratio,
     ):
         """
         Initialize an instance of the Odometry class.
