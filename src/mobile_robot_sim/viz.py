@@ -261,7 +261,6 @@ class Visualizer:
                 marker="*",
                 color=color,
                 linewidth=2,
-                label=label,
                 alpha=alpha,
             )
 
