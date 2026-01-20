@@ -15,13 +15,22 @@ class Robot:
 
     Attributes:
         env (Environment): the environment this robot is operating in
-        last_lin_vel (float): most recent linear velocity command
-        last_ang_vel (float): most recent angular velocity command
+        cmd_lin_vel (float): most recent linear velocity command
+        cmd_ang_vel (float): most recent angular velocity command
+        actual_lin_vel (float): most recent executed linear velocity
+        actual_ang_vel (float): most recent executed angular velocity
         sensors (list[SensorInterface]): list of all robot sensors
     """
 
-    def __init__(self, env: Environment):
-        """ """
+    def __init__(
+        self,
+        env: Environment,
+        robot_info: dict,
+        sensor_info: dict,
+    ):
+        """
+        Initialize an instance of the Robot class.
+        """
         self.env = env
         # commands from controller
         self.cmd_lin_vel = 0.0  # m/s
@@ -31,12 +40,41 @@ class Robot:
         self.actual_ang_vel = 0.0  # rad/s
 
         # physical properties
-        self.EXECUTION_NOISE_LINEAR = 0.03  # 3% error
-        self.EXECUTION_NOISE_ANGULAR = 0.05  # 5% error
+        mtr_info = robot_info["MotorCommands"]
+        self.EXECUTION_NOISE_LINEAR = mtr_info["linear_noise"]
+        self.EXECUTION_NOISE_ANGULAR = mtr_info["angular_noise"]
+
+        # unpack sensor info
+        gps_info = sensor_info["GPS"]
+        lmp_info = sensor_info["LandmarkPinger"]
+        odom_info = sensor_info["Odometry"]
         self.sensors: dict[str, SensorInterface] = {
-            "LandmarkPinger": LandmarkPinger(self),
-            "GPS": GPS(self),
-            "Odometry": Odometry(self),
+            "GPS": GPS(
+                robot=self,
+                name="GPS",
+                interval=gps_info["interval"],
+                x_noise=gps_info["x_noise"],
+                y_noise=gps_info["y_noise"],
+            ),
+            "LandmarkPinger": LandmarkPinger(
+                robot=self,
+                name="LandmarkPinger",
+                interval=lmp_info["interval"],
+                max_range=env.lm_range,
+                range_noise=lmp_info["range_noise_const"],
+                range_prop_noise=lmp_info["range_noise_prop"],
+                bearing_noise=lmp_info["bearing_noise_const"],
+                bearing_prop_noise=lmp_info["bearing_noise_prop"],
+            ),
+            "Odometry": Odometry(
+                robot=self,
+                name="Odometry",
+                interval=odom_info["interval"],
+                lin_noise=odom_info["linear_noise_const"],
+                linear_noise_ratio=odom_info["linear_noise_prop"],
+                ang_noise=odom_info["angular_noise_const"],
+                angular_noise_ratio=odom_info["angular_noise_prop"],
+            ),
         }
 
     # --- Controller Methods ---
@@ -163,15 +201,25 @@ class Robot:
         data.append(ang_row)
         # iterate through sensors
         for name, sensor in self.sensors.items():
-            # GPS is very simple: 1 axis of constant noise
+            # GPS has x noise and y noise
             if isinstance(sensor, GPS):
+                # x
                 row = pd.DataFrame(
                     0,
                     index=pd.RangeIndex(1),
                     columns=columns,
                 )
-                row["Sensor Name"] = name
-                row["Constant Noise"] = sensor.GPS_NOISE
+                row["Sensor Name"] = name + "X"
+                row["Constant Noise"] = sensor.X_NOISE
+                data.append(row)
+                # y
+                row = pd.DataFrame(
+                    0,
+                    index=pd.RangeIndex(1),
+                    columns=columns,
+                )
+                row["Sensor Name"] = name + "Y"
+                row["Constant Noise"] = sensor.Y_NOISE
                 data.append(row)
             # odom has linear and angular components to consider
             elif isinstance(sensor, Odometry):

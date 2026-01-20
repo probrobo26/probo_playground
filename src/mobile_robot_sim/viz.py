@@ -2,8 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import pandas as pd
 import numpy as np
-import re
+from matplotlib.animation import FuncAnimation, PillowWriter
 import pickle
+from pathlib import Path
+from utils import Pose, Landmark
 
 
 class Visualizer:
@@ -13,16 +15,25 @@ class Visualizer:
 
     def __init__(
         self,
-        env_info,
-        gt_log,
-        sensor_log,
+        output_path: Path,
     ):
         """
         Initialize the visualizer class.
         """
-        self.env_info = env_info
-        self.gt_log = gt_log
-        self.sensor_log = sensor_log
+        self.output_path = output_path
+        gt_log_path = output_path / "groundtruth_log.pkl"
+        sensor_log_path = output_path / "sensor_log.pkl"
+        env_info_path = output_path / "env_info.pkl"
+        sensor_info_path = output_path / "sensor_info.pkl"
+        with open(sensor_log_path, "rb") as f:
+            self.sensor_log = pickle.load(f)
+        with open(gt_log_path, "rb") as f:
+            self.gt_log = pickle.load(f)
+        # unpack into dataframes
+        with open(env_info_path, "rb") as f:
+            self.env_info = pickle.load(f)
+        with open(sensor_info_path, "rb") as f:
+            self.sensor_info = pickle.load(f)
 
     def plot_env(self):
         """
@@ -73,10 +84,10 @@ class Visualizer:
 
         # Plot landmarks
         for lm in self.env_info["Landmarks"]:
-            # Plot pinging range circle (10m radius)
+            # Plot pinging range circle
             circle = patches.Circle(
                 (lm["pos"]["x"], lm["pos"]["y"]),
-                10,  # 10m radius
+                self.env_info["Pinger Range"],
                 linewidth=1,
                 edgecolor="red",
                 facecolor="red",
@@ -112,8 +123,13 @@ class Visualizer:
         Output a DataFrame of estimated pose data with the following columns:
         Time | x | y | theta
         """
+        # pop the first pose from GT
+        prior = next(self.gt_log.itertuples())
+        pose: Pose = prior.RobotPose
+        x = pose.pos.x
+        y = pose.pos.y
+        theta = pose.theta
         poses = []
-        x, y, theta = 0.0, 0.0, 0.0
         dt = self.env_info["Timestep"]
 
         for row in self.sensor_log.itertuples():
@@ -147,16 +163,11 @@ class Visualizer:
         poses = []
 
         for row in self.gt_log.itertuples():
-            # Parse the RobotPose string (format: X{x}Y{y}T{theta})
-            pose_str = row.RobotPose
-            match = re.match(r"X([-\d.]+)Y([-\d.]+)T([-\d.]+)", pose_str)
-
-            if match:
-                x = float(match.group(1))
-                y = float(match.group(2))
-                theta = float(match.group(3))
-
-                poses.append({"Time": row.Time, "x": x, "y": y, "theta": theta})
+            pose: Pose = row.RobotPose
+            x = pose.pos.x
+            y = pose.pos.y
+            theta = pose.theta
+            poses.append({"Time": row.Time, "x": x, "y": y, "theta": theta})
 
         return pd.DataFrame(poses)
 
@@ -194,7 +205,12 @@ class Visualizer:
         return pd.DataFrame(poses)
 
     def plot_single_trajectory(
-        self, label, pose_table: pd.DataFrame, color="blue", alpha=1.0
+        self,
+        label,
+        pose_table: pd.DataFrame,
+        color="blue",
+        alpha=1.0,
+        scatter=False,
     ):
         """
         Given a DataFrame of robot pose data with the following columns:
@@ -213,9 +229,9 @@ class Visualizer:
             pose_table["y"],
             "-",
             color=color,
-            alpha=alpha,
             linewidth=2,
             label=label,
+            alpha=alpha,
         )
 
         # Plot arrows showing heading at intervals
@@ -236,7 +252,17 @@ class Visualizer:
                 head_length=0.2,
                 fc=color,
                 ec=color,
-                alpha=alpha * 0.7,
+                alpha=alpha * 0.25,
+            )
+        if scatter:
+            ax.scatter(
+                pose_table["x"],
+                pose_table["y"],
+                marker="*",
+                color=color,
+                linewidth=2,
+                label=label,
+                alpha=alpha,
             )
 
         # Mark start and end positions
@@ -284,32 +310,160 @@ class Visualizer:
             "GPS Only",
             self.poses_from_gps(),
             "orange",
+            scatter=True,
         )
-        plt.savefig("./logs/dataset_viz.png")
-        plt.show()
+        plt.savefig(self.output_path / "dataset_viz.png")
+        print("Finished plotting at path: ")
+        print(self.output_path / "dataset_viz.png")
 
+    def animate_trajectories(
+        self,
+        fps=30,
+        speedup=3.0,
+        linger_seconds=5.0,
+    ):
+        """
+        Create an animated GIF showing trajectories being drawn over time.
 
-if __name__ == "__main__":
-    # grab all the data
-    DATA_PATH = "./logs/"
-    gt_log_path = DATA_PATH + "groundtruth_log.pkl"
-    sensor_log_path = DATA_PATH + "sensor_log.pkl"
-    env_info_path = DATA_PATH + "env_info.pkl"
-    sensor_info_path = DATA_PATH + "sensor_info.pkl"
-    with open(sensor_log_path, "rb") as f:
-        sensor_log = pickle.load(f)
-    with open(gt_log_path, "rb") as f:
-        gt_log = pickle.load(f)
-    # unpack into dataframes
-    with open(env_info_path, "rb") as f:
-        env_info = pickle.load(f)
-    with open(sensor_info_path, "rb") as f:
-        sensor_info = pickle.load(f)
+        Args:
+            fps: Frames per second for the animation
+            save_path: Where to save the GIF
+            speedup: Speed multiplier (2.0 = 2x faster, 0.5 = half speed)
+            linger_seconds: How long to hold on final frame with end markers
+        """
+        # Get all trajectory data
+        gt_poses = self.poses_from_gt()
+        odom_poses = self.poses_from_odom()
+        gps_poses = self.poses_from_gps()
 
-    # make visuals
-    viz = Visualizer(
-        env_info,
-        gt_log,
-        sensor_log,
-    )
-    viz.draw_all()
+        # Find the maximum number of frames needed
+        max_frames = max(len(gt_poses), len(odom_poses))
+
+        # Apply speedup by sampling fewer frames
+        frame_skip = int(speedup)
+        frame_indices = list(range(0, max_frames, max(1, frame_skip)))
+
+        # Add linger frames at the end (repeat last frame)
+        linger_frames = int(linger_seconds * fps)
+        frame_indices.extend([frame_indices[-1]] * linger_frames)
+
+        # Initialize the plot
+        fig, ax = self.plot_env()
+
+        # Initialize line objects for each trajectory
+        (gt_line,) = ax.plot(
+            [], [], "-", color="green", linewidth=2, label="Ground Truth", alpha=0.8
+        )
+        (odom_line,) = ax.plot(
+            [], [], "-", color="red", linewidth=2, label="Dead Reckoning", alpha=0.8
+        )
+        (gps_line,) = ax.plot([], [], "-", color="orange", linewidth=2, alpha=0.8)
+        gps_scatter = ax.scatter(
+            [],
+            [],
+            c="orange",
+            s=50,
+            marker="x",
+            label="GPS Measurements",
+            alpha=0.6,
+            zorder=5,
+        )
+
+        # Initialize end marker objects (hidden initially)
+        gt_end = ax.plot([], [], "s", color="green", markersize=10, alpha=0)[0]
+        odom_end = ax.plot([], [], "s", color="red", markersize=10, alpha=0)[0]
+        gps_end = ax.plot([], [], "s", color="orange", markersize=10, alpha=0)[0]
+
+        # Add time display
+        time_text = ax.text(
+            0.02,
+            0.98,
+            "",
+            transform=ax.transAxes,
+            fontsize=12,
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+        )
+
+        ax.legend(loc="upper right")
+
+        def init():
+            """Initialize animation"""
+            gt_line.set_data([], [])
+            odom_line.set_data([], [])
+            gps_line.set_data([], [])
+            gps_scatter.set_offsets(np.empty((0, 2)))
+            gt_end.set_data([], [])
+            odom_end.set_data([], [])
+            gps_end.set_data([], [])
+            time_text.set_text("")
+            return (
+                gt_line,
+                odom_line,
+                gps_line,
+                gps_scatter,
+                gt_end,
+                odom_end,
+                time_text,
+            )
+
+        def animate(frame_idx):
+            """Update function for each frame"""
+            actual_frame = (
+                frame_indices[frame_idx]
+                if frame_idx < len(frame_indices)
+                else frame_indices[-1]
+            )
+            is_final_frame = frame_idx >= len(frame_indices) - linger_frames
+
+            # Update ground truth
+            if actual_frame < len(gt_poses):
+                gt_data = gt_poses.iloc[: actual_frame + 1]
+                gt_line.set_data(gt_data["x"], gt_data["y"])
+                current_time = gt_data.iloc[-1]["Time"]
+                time_text.set_text(f"Time: {current_time:.1f}s")
+
+                # Show end marker on final frames
+                if is_final_frame:
+                    gt_end.set_data([gt_data.iloc[-1]["x"]], [gt_data.iloc[-1]["y"]])
+                    gt_end.set_alpha(0.8)
+
+            # Update dead reckoning
+            if actual_frame < len(odom_poses):
+                odom_data = odom_poses.iloc[: actual_frame + 1]
+                odom_line.set_data(odom_data["x"], odom_data["y"])
+
+                # Show end marker on final frames
+                if is_final_frame:
+                    odom_end.set_data(
+                        [odom_data.iloc[-1]["x"]], [odom_data.iloc[-1]["y"]]
+                    )
+                    odom_end.set_alpha(0.8)
+
+            # Update GPS measurements synchronized by time
+            # Find GPS measurements up to the current time
+            if actual_frame < len(gt_poses):
+                current_time = gt_poses.iloc[actual_frame]["Time"]
+                gps_up_to_now = gps_poses[gps_poses["Time"] <= current_time]
+                if len(gps_up_to_now) > 0:
+                    gps_line.set_data(gps_up_to_now["x"], gps_up_to_now["y"])
+                    gps_scatter.set_offsets(gps_up_to_now[["x", "y"]].values)
+
+            return gt_line, odom_line, gps_scatter, gt_end, odom_end, time_text
+
+        # Create animation
+        anim = FuncAnimation(
+            fig,
+            animate,
+            init_func=init,
+            frames=len(frame_indices),
+            interval=1000 / fps,  # milliseconds between frames
+            blit=True,
+            repeat=True,
+        )
+
+        # Save as GIF
+        writer = PillowWriter(fps=fps)
+        anim.save(self.output_path / "trajectory_animation.gif", writer=writer)
+        plt.close(fig)
+        return anim

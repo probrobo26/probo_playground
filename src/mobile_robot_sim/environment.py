@@ -27,6 +27,7 @@ class Environment:
         obstacles: list[Bounds],
         landmarks: list[Landmark],
         timestep: float = 0.1,
+        lm_range: float = 10.0,
     ):
         """
         Initialize the environment, ensuring that all settings are compatible with each other.
@@ -58,6 +59,7 @@ class Environment:
         self.OBSTACLES = obstacles
 
         # validate all landmark positions and uniqueness
+        self.lm_range = lm_range
         for l in landmarks:
             assert dimensions.within_bounds(l.pos)
         assert len(set(l.id for l in landmarks)) == len(landmarks)
@@ -181,6 +183,7 @@ class Environment:
             "Obstacles": [obs.to_dict() for obs in self.OBSTACLES],
             "Landmarks": [l.to_dict() for l in self.LANDMARKS],
             "Timestep": self.DT,
+            "Pinger Range": self.lm_range,
         }
 
     def take_gt_snapshot(self):
@@ -191,16 +194,14 @@ class Environment:
         df1 = pd.DataFrame(
             {
                 "Time": [self.time],
-                "RobotPose": [self.agent_pose.to_string()],
+                "RobotPose": [self.agent_pose],
             }
         )
         # landmark hell
         gt_to_lms = self.get_gt_to_landmarks()
         df2 = pd.DataFrame()
         for lm in gt_to_lms.columns:
-            df2[lm] = [
-                gt_to_lms[lm].values[0].to_string()
-            ]  # flip BearingRange to string representation
+            df2[lm] = [gt_to_lms[lm].values[0]]
 
         # combine and return
         return pd.merge(

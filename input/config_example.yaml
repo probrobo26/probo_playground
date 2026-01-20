@@ -1,0 +1,37 @@
+environment:
+  width: 10 # meters
+  height: 10 # meters
+  runtime: 30 # seconds
+  timestep: 0.1 # seconds
+  robot_start: [0.0, 0.0, 0.6] # x, y, theta
+  pinger_range: 3.0 # meters
+  landmarks:
+  - [2.0, 2.0] # x, y
+  - [5.0, 5.0]
+  - [8.0, 8.0]
+  obstacles:
+  - [5, 7, 5, 7] # x_min, x_max, y_min, y_max
+  - [0, 4, 6, 8]
+
+robot:
+  MotorCommands:
+    linear_noise: 0.03 # m/s
+    angular_noise: 0.05 # rad/s
+
+sensors:
+  GPS:
+    interval: 2.0
+    x_noise: 0.5 # meters
+    y_noise: 0.5 # meters
+  LandmarkPinger:
+    interval: 0.5
+    bearing_noise_const: 0.08 # radians
+    bearing_noise_prop: 0.0
+    range_noise_const: 0.1 # meters
+    range_noise_prop: 0.05
+  Odometry:
+    interval: 0.1
+    linear_noise_const: 0.05 # m/s
+    linear_noise_prop: 0.01 # m/s
+    angular_noise_const: 0.1
+    angular_noise_prop: 0.1
