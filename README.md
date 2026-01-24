@@ -8,11 +8,12 @@ This repository is meant to be a starting point for creativity and self-guided l
 ## File Structure
 ```bash
 ├── src/
-│   ├── estimator.py
-│   ├── kalman.py
+│   ├── simulator.py
+│   ├── environment.py
+│   ├── robot.py
 │   ├── sensors.py
-│   ├── utils.py
 │   ├── viz.py
+│   ├── utils.py
 ├── input/
 ├── output/
 ├── requirements.txt
