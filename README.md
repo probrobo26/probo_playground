@@ -25,3 +25,10 @@ This repository is meant to be a starting point for creativity and self-guided l
 This repository is a skeleton for you to use as a starting point for your own robot simulation environment! You should use the existing architecture and scaffolding as much as is useful for your learning, and you are welcome to structure the simulator however you see fit. The `src/` folder contains a basic outline of recommended files, classes, and functions, but these are by no means a requirement or a complete pipeline.
 
 If you'd like to follow a more guided walkthrough of how to build this simulator, check out the `simulator.md` file. Reference code is also available on the main branch of this repository in case you get stuck on anything!
+
+At minimum, your simulator should include the following features:
+- A class that maintains and updates the ground truth state of the world and robot (including obstacles, environment features, robot position, etc)
+- A class that reads an input file of motor commands and executes them to move the robot around in the environment
+- Classes to model at least one proprioceptive sensor (wheel encoders, IMU) and at least one exteroceptive sensor (GPS, beacon-range to landmarks, LIDAR); each sensor must take noisy samples of the ground truth at specific intervals
+- Functionality to write an output file listing ground truth data and sensor data by timestep
+- An easy-to-read README with details on how to run the simulator, and a requirements.txt file listing all dependencies
