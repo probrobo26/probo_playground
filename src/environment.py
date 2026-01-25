@@ -6,6 +6,8 @@ The Environment class models the world that the robots navigate in. The world is
 Critically, the environment tracks the robot's state. In this case, the robot's state is a vector that includes three state variables: x position, y position, and heading.
 """
 
+from utils import Position, Pose, Bounds, Landmark, BearingRange
+
 
 class Environment:
     """
@@ -22,25 +24,35 @@ class Environment:
 
     def __init__(
         self,
-        width: int,
-        height: int,
+        dimensions: Bounds,
         dt: float,
-        obstacles: list,
-        landmarks: list,
-        robot_starting_pose: list,
+        obstacles: list[Bounds],
+        landmarks: list[Landmark],
+        robot_starting_pose: Pose,
     ):
         """
         Initialize an instance of the Environment class.
 
         Args:
-            width: the horizontal size of the world
-            height: the vertical size of the world
+            dimensions: the horizontal and vertical size of the world
             dt: the length of each timestep, in seconds
             obstacles: a list of obstacles
             landmarks: a list of landmarks
             robot_starting_pose: the initial position and heading of the robot
         """
-        pass
+        # nab the dimensions
+        self.DIMS = dimensions
+
+        # note the timestep and current time
+        self.DT = dt
+        self.time = 0.0
+
+        # log obstacles and landmarks
+        self.OBSTACLES = obstacles
+        self.LANDMARKS = landmarks
+
+        # place the robot in the world
+        self.robot_pose = robot_starting_pose
 
     def robot_step(self, dx: float, dy: float, dtheta: float):
         """
@@ -67,13 +79,12 @@ class Environment:
         """
         pass
 
-    def is_valid_position(self, x: float, y: float):
+    def is_valid_position(self, position: Position):
         """
         Check if a given robot position is valid; i.e. not out-of-bounds or within an obstacle. Return a boolean representing whether or not this condition is true.
 
         Args:
-            x (float): the given x position
-            y (float): the given y position
+            position: the robot position
 
         Returns:
             true if the position is valid and false otherwise
@@ -94,6 +105,12 @@ class Environment:
 
     def take_state_snapshot(self):
         """
-        Return true state information about this timestep, including robot position and the robot's bearing/range to landmarks, in a table format.
+        Return true state information about this timestep, including time, robot position, and the robot's bearing/range to landmarks, in a table format.
+        """
+        pass
+
+    def get_environment_info(self):
+        """
+        Return static information about the environment, including dimensions, timestep size, locations and dimensions of obstacles, and locations of landmarks.
         """
         pass

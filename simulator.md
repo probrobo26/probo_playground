@@ -28,6 +28,8 @@ As of now, the simulator does not model the "action" portion of the framework. I
 
 ## 1. Designing the Environment Class
 
+> File: `src/environment.py`
+
 ### 1.1 Your Robot In The World
 
 We're designing a simulation environment for a 2D mobile robot. This could represent many types of real-world robots: roombas, ground vehicles, autonomous boats, and even unmanned aircraft at a constant altitude! In each of these scenarios, the robot in question has the same kinematic state variables: x position, y position, and heading. Our environment class should keep track each of these values.
@@ -35,6 +37,8 @@ We're designing a simulation environment for a 2D mobile robot. This could repre
 Speaking of x and y, the environment probably shouldn't be infinite! Aside from the fact that real-world robots often have limitations on where they can travel, a bounded world will be easier to visualize and plot later on. Therefore, the environment should track minimum and maximum legal x and y values that define how far the robot can move.
 
 One final state variable to track is the simulator's current timestep. Presumably, the starting time will be zero, and time should "step" forward regularly (we'll do this a little later). Critically, the size of the timestep should be constant, so be sure that this is either a settable parameter or an unchanging value in your code.
+
+> Coding tip: All of these variables (robot pose, world dimensions, and time) are initialized in the Environment class for you already. Make sure you know which variable is tracking each value before moving on.
 
 ### 1.2 Static Environment Features
 
@@ -44,17 +48,31 @@ In robotic navigation, "landmarks" describe any unique, identifiable feature in 
 
 In the real world, the line between "obstacles" and "landmarks" is extremely fuzzy. I've separated the two ideas in my simulator for computational simplicity, but if you want to explore defining a data structure that represents both, you are welcome to explore this topic!
 
+> Coding tip: The obstacle and landmark lists have also been initialized for you already. They reference data classes defined in `src/utils.py`, so make sure to read that file to understand what data they store.
+
 ### 1.3 Moving Your Robot In The World
 
 At this point, our environment is tracking a robot's position, as well as obstacles and landmarks. But what if we'd like to move that robot around? The environment should possess a function that takes in changes to each of the robot's state variables (dx, dy, and d-theta) and uses them to modify the robot's position in the environment. Don't forget that each time the robot state is updated, the environment should increment its current timestep as well!
 
-But are all moves legal? There are constraints to how a real robot can physically move -- it cannot pass through obstacles, nor should it be able to exit the bounds of the environment. We need to make sure this is true in our simulator, too. To do this, the environment should possess a function that takes in a robot position (x and y) and validates that position using the environment's limits and its obstacles list. This function should return a boolean indicating whether or not the given position is valid. Now our state-changing function can validate requested moves before actually executing them!
+> Coding tip: Fill in the function `robot_step()` with this functionality!
+
+But are all states legal? There are constraints to where a real robot can physically be -- it cannot be inside an obstacle, nor should it ever be outside the bounds of the environment. We need to make sure this is true in our simulator, too. To do this, the environment should possess a function that takes in a robot position (x and y) and validates that position using the environment's limits and its obstacles list. This function should return a boolean indicating whether or not the given position is valid.
+
+> Coding tip: Fill in the function `is_valid_position()` with this functionality! 
+
+If some states are invalid, it follows that we should prevent robotic motion that would cause the robot to enter an invalid state. The environment should possess a function that takes in changes to the robot position (dx and dy) and checks whether the resultant position is valid. The function should then return the actual dx and dy to be executed. Now we have a validating function to use in our movement function!
+
+> Coding tip: Fill in the function `validate_xy_motion()` with this functionality; then call it in `robot_step()`!
 
 ### 1.4 Logging Ground Truth Data
 
 At this point, we've actually accomplished a very simple simulator. Congratulations! The last thing to do to make this tool useful is to create functions that logs a snapshot of what the environment's states look like at each timestep. All values that change (time, robot pose, and bearing-range from robot to landmarks) should be logged in some standard format. I would recommend either writing the data directly to a CSV file, or [using the pandas library to build the log as a DataFrame.](https://pandas.pydata.org/docs/user_guide/index.html)
 
+> Coding tip: Fill in the function `take_state_snapshot()` with this functionality. It may be helpful to also fill in the helper functions `get_robot_state()` and `get_proximity_to_landmarks()` and call them in `take_state_snapshot()`.
+
 In addition to changing data, it may also be useful to export the static environment data (timestep size, obstacle and landmark positions, world bounds). This could also be saved as a CSV or pandas DataFrame, or you could simply use the [Python pickle library](https://docs.python.org/3/library/pickle.html) to save a simple dictionary of static data as a .pkl file.
+
+> Coding tip: Fill in the function `get_environment_info()` with this functionality.
 
 ## 2. Designing the Robot Class
 
