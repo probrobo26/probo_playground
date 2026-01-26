@@ -37,8 +37,8 @@ if __name__ == "__main__":
 
     # set up input filepath and output filepaths
     input_commands_filepath = ""
-    output_ground_truth = ""
-    output_sensor_data = ""
+    output_ground_truth_filepath = ""
+    output_sensor_data_filepath = ""
 
     # open up the instructions, pop the first
     with open(input_commands_filepath, "r") as cmd:
@@ -52,4 +52,9 @@ if __name__ == "__main__":
 
             # TODO: execute the motor command
 
-        # TODO: write both history lists to their respective output files
+    # at the end, write the histories into output files
+    with open(output_ground_truth_filepath, "w") as gt_data:
+        # TODO: write ground_truth_history to a file
+
+    with open(output_sensor_data_filepath, "w") as sensor_data:
+        # TODO: write sensor_data_history to a file

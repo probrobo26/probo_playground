@@ -26,6 +26,12 @@ In this simulator assignment, in addition to state, you will also model the "sen
 
 As of now, the simulator does not model the "action" portion of the framework. Instead, the robot in this simulator is remote-controlled by an input file of motor commands. Later in the semester, as we explore planning under uncertainty, we may develop algorithms that generate an input file to the simulator, opposite to how estimation algorithms from the prediction unit will read the simulator's output files to run. In this way, all robotic "thinking" occurs outside of the simulator.
 
+### 0.4 Unit Testing Your Simulator
+
+Unit testing is valuable to this project for two reasons: One, even if your code is working for the test environment you've designed, there may be edge cases (or regular cases) that will cause the simulator to fail if encountered. Two, as we modify and expand this codebase to accomodate more features, you'll want to guarantee that no existing functionality is lost or broken during the development process. Unit tests protect your code from both situations by providing small test cases that verify individual (perhaps unit-sized) components of the simulator's functionality.
+
+I recommend developing unit tests alongside the actual files, because writing them can help you discover cleaner, more modular, and more elegant ways of writing your program as you go. I also think this is useful because writing unit tests after the fact can feel like a slog. However, even if you don't get to unit testing until your first pass at writing a codebase, I still encourage you to develop a suite of them because they make the debugging process infinitely faster. If you need ideas for what kinds of tests to write, or want an example of how to set up test files with Pytest, I encourage you to reference the `main` branch of this repository, which has unit test suites for the environment class and robot class!
+
 ## 1. Designing the Environment Class
 
 > File: `src/environment.py`
@@ -171,6 +177,31 @@ Next, loop through each item of the `sensors` list in `take_sensor_measurements(
 
 You now have all of the necessary components for running this simulator! You can view the skeleton and TODOs for this last section in the main file of the repository. The first step here is to design a test environment. To do this, fill in the variables that are passed to the environment instance with whatever values you see fit. Make sure to test out a mix of obstacles and landmarks!
 
-### 4.2 
+### 4.2 Timekeeping And Input Files
 
-[Under construction]
+Next, you'll need to define how much time the simulator will be simulating. Do you want a ten-second run, or a five-minute run? No matter what you choose, you'll need to next make a file that provides motor commands as instructions for how the robot should be moving at each timestep. The simplest way to do this is to write a CSV file where each row is a timestep and a set of instructions (time=0 seconds, lin_vel=1 m/s,ang_vel=pi/4 rad/s). However, I encourage you to explore options beyond this that make writing the input file a little easier! The `main` branch of this repository implements a solution in which the input file only lists motor commands if they are not identical to the command of the prior timestep -- feel free to reference that code here!
+
+> Coding tip: the `main` branch also provides an example command input file titled `input/vel_cmd_example.csv`. Feel free to use this file directly if you'd like!
+
+When you have an input file in a format you like, save the filepath to the `input_commands_filepath` variable. Note that two other variables, `output_ground_truth_filepath` and `output_sensor_data_filepath`, are here as well and you'll need to provide a filepath for each as well (the file doesn't need to exist yet!).
+
+### 4.3 Running The Simulator
+
+The skeleton code sets up a for loop that loops through every timestep, starting at zero and ending at `total_seconds` while incrementing by an amount `dt`. For each timestep, you'll want to do three things:
+- Take a snapshot of the ground truth environment with `env.take_state_snapshot()` and append it to `ground_truth_history`
+- Take a set of robot sensor readings with `robot.take_sensor_measurements()` and append it to `sensor_data_history`
+- Pop the next motor input command from the input file and execute it with `robot.robot_step_differential()` or `robot.robot_step_translational()`
+
+After doing this every timestep, you will have amassed a complete dataset of ground truth data side-by-side with the robot's noisy samples of that same data! The last thing to do is to write `ground_truth_history` and `sensor_data_history` to `output_ground_truth_filepath` and `output_sensor_data_filepath`, respectively. Whatever format you chose for the environment's and robot's snapshot functions should match with the filetypes of the filepath (again, I recommend [pickle](https://docs.python.org/3/library/pickle.html), [pandas](https://pandas.pydata.org/docs/user_guide/index.html#user-guide), or [csv](https://docs.python.org/3/library/csv.html) for this).
+
+Congratulations! You now have a complete and operational simulation environment. Hopefully, this will be a useful tool for future projects both inside and outside of this class. As we progress in the ProbRobo curriculum, we'll continue to build out features to make the simulator versatile for testing a broad set of robotic algorithms. But for now, give yourself a pat on the back for your hard work :)
+
+## 5 Next Steps
+
+### 5.1 Visualizing The Simulator
+
+Adding visualization to your simulator will be a huge help, whether that's for debugging robotic algorithms or the simulator itself! I recommend using the [matplotlib pyplot library](https://matplotlib.org/3.5.3/api/_as_gen/matplotlib.pyplot.html), which is very well-documented and used in many Olin classes. The `main` branch of this repository contains a reference file titled `src/viz.py` for visualization code, which I encourage you to use if you're looking for a place to start. Note that the functions in `src/viz.py` assume that the output datafiles are in the format I specified in my own snapshot/sampling functions, and you'll need to adapt them to accept the format you chose.
+
+### 5.2 Adding Easy Configurability
+
+Another useful feature to add to your simulator is external configuration via a config file, such as `input/config_example.yaml` in the `main` branch of this repository. This will make it easy for you and other users of your simulator to modify variables such as environmental features and noise constants without having to dig through the codebase itself to set them. I recommend using filetypes such as YAML or JSON, which allow you to define key-value pairs that can be unpacked and saved to variables. Again, reference code that does exactly this is available in the `main` branch of this repository.
