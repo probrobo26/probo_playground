@@ -1,3 +1,9 @@
+"""
+This file contains several useful custom datatypes for you to use at your convenience! Generally, they provide structure for data that is commonly grouped together anyway (such as x and y coordinates, rectangle dimensions, and sensor measurements).
+
+There is nothing you need to edit or fill in within this file, but feel free to alter the existing datatypes and add more as you see fit!
+"""
+
 from dataclasses import dataclass
 import random
 
@@ -12,12 +18,18 @@ class Position:
     y: float = 0.0
 
     def to_dict(self):
+        """
+        Return in dictionary format.
+        """
         return {
             "x": self.x,
             "y": self.y,
         }
 
     def to_string(self):
+        """
+        Return in string format.
+        """
         return f"X{self.x}Y{self.y}"
 
 
@@ -31,12 +43,18 @@ class Pose:
     theta: float = 0.0
 
     def to_dict(self):
+        """
+        Return in dictionary format.
+        """
         return {
             "pos": self.pos.to_dict(),
             "theta": self.theta,
         }
 
     def to_string(self):
+        """
+        Return in string format.
+        """
         return self.pos.to_string() + f"T{self.theta}"
 
 
@@ -52,15 +70,27 @@ class Bounds:
     y_max: float
 
     def within_x(self, x: float) -> bool:
+        """
+        Check if an x value is within the x limits (inclusive).
+        """
         return self.x_max >= x and self.x_min <= x
 
     def within_y(self, y: float) -> bool:
+        """
+        Check if an y value is within the y limits (inclusive).
+        """
         return self.y_max >= y and self.y_min <= y
 
     def within_bounds(self, pos: Position) -> bool:
+        """
+        Check if an xy coordinate is within the bounds (inclusive).
+        """
         return self.within_x(pos.x) and self.within_y(pos.y)
 
     def to_dict(self):
+        """
+        Return in dictionary format.
+        """
         return {
             "x_min": self.x_min,
             "x_max": self.x_max,
@@ -69,6 +99,9 @@ class Bounds:
         }
 
     def to_string(self):
+        """
+        Return in string format.
+        """
         return f"X{self.x_min}-{self.x_max}Y{self.y_min}-{self.y_max}"
 
 
@@ -82,12 +115,18 @@ class Landmark:
     id: int
 
     def to_dict(self):
+        """
+        Return in dictionary format.
+        """
         return {
             "id": self.id,
             "pos": self.pos.to_dict(),
         }
 
     def to_string(self):
+        """
+        Return in string format.
+        """
         return f"L{self.id}" + self.pos.to_string()
 
 
@@ -102,6 +141,9 @@ class BearingRange:
     range: float
 
     def to_dict(self):
+        """
+        Return in dictionary format.
+        """
         return {
             "landmark_id": self.landmark_id,
             "bearing": self.bearing,
@@ -109,4 +151,7 @@ class BearingRange:
         }
 
     def to_string(self):
+        """
+        Return in string format.
+        """
         return f"LM{self.landmark_id}B{self.bearing}R{self.range}"
