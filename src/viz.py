@@ -465,4 +465,6 @@ class Visualizer:
         writer = PillowWriter(fps=fps)
         anim.save(self.output_path / "trajectory_animation.gif", writer=writer)
         plt.close(fig)
+        print("Finished animating at path: ")
+        print(self.output_path / "trajectory_animation.gif")
         return anim
