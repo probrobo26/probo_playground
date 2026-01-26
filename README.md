@@ -13,6 +13,7 @@ This repository is meant to be a starting point for creativity and self-guided l
 ├── output/
 ├── requirements.txt
 ├── README.md
+├── simulator.md
 ```
 
 `src` houses the source code for this project.
