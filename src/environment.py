@@ -14,8 +14,7 @@ class Environment:
     A class that models the world simulation environment and the robot's state.
 
     Attributes:
-        width: the horizontal size of the world
-        height: the vertical size of the world
+        dimensions: the horizontal and vertical size of the world
         dt: the length of each timestep, in seconds
         obstacles: a list of obstacles
         landmarks: a list of landmarks
@@ -40,19 +39,21 @@ class Environment:
             landmarks: a list of landmarks
             robot_starting_pose: the initial position and heading of the robot
         """
-        # nab the dimensions
-        self.DIMS = dimensions
+        # TODO: set the dimensions property to the parameter value
+        self.DIMENSIONS = None
 
-        # note the timestep and current time
-        self.DT = dt
-        self.time = 0.0
+        # TODO: set the timestep size property to the parameter value
+        self.DT = None
 
-        # log obstacles and landmarks
-        self.OBSTACLES = obstacles
-        self.LANDMARKS = landmarks
+        # TODO: set the current time to zero
+        self.time = None
 
-        # place the robot in the world
-        self.robot_pose = robot_starting_pose
+        # TODO: set the obstacles and landmarks properties to the parameter lists
+        self.OBSTACLES = None
+        self.LANDMARKS = None
+
+        # TODO: set the robot pose property to the parameter value
+        self.robot_pose = None
 
     def robot_step(self, dx: float, dy: float, dtheta: float):
         """
@@ -62,7 +63,11 @@ class Environment:
             dx: change in x position
             dy: change in y position
             dtheta: change in heading
+
+        Returns:
+            Nothing, but update the robot_pose property at the end
         """
+        # TODO: fill in the function
         pass
 
     def is_valid_motion(self, dx: float, dy: float):
@@ -77,6 +82,7 @@ class Environment:
             dx: change in x position that should be executed
             dy: change in y position that should be executed
         """
+        # TODO: fill in the function
         pass
 
     def is_valid_position(self, position: Position):
@@ -89,28 +95,33 @@ class Environment:
         Returns:
             true if the position is valid and false otherwise
         """
+        # TODO: fill in the function
         pass
 
     def get_robot_pose(self):
         """
         Return the true robot pose.
         """
+        # TODO: fill in the function
         pass
 
     def get_proximity_to_landmarks(self):
         """
-        Return the robot's true range and bearing to all landmarks.
+        Return a list of the robot's true range and bearing to all landmarks.
         """
+        # TODO: fill in the function
         pass
 
     def take_state_snapshot(self):
         """
         Return true state information about this timestep, including time, robot position, and the robot's bearing/range to landmarks, in a table format.
         """
+        # TODO: fill in the function
         pass
 
     def get_environment_info(self):
         """
         Return static information about the environment, including dimensions, timestep size, locations and dimensions of obstacles, and locations of landmarks.
         """
+        # TODO: fill in the function
         pass

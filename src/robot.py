@@ -14,7 +14,6 @@ class Robot:
 
     Attributes:
         env: the environment this robot is operating in
-        DT: the environment's constant timestep size
         sensors: list of all robot sensors
     """
 
@@ -25,24 +24,47 @@ class Robot:
         Args:
             env: the environment this robot is operating in
         """
-        self.env = env
-        self.DT = self.env.DT
+        # TODO: set the environment property to the parameter value
+        self.env = None
+        # TODO: initialize the sensors property as an empty list
         self.sensors = []
 
     def robot_step_differential(self, lin_vel: float, ang_vel: float):
         """
         Differential-drive mode. Given forward linear and angular velocities, determine the robot's change in x, y, and heading and apply those changes in the environment.
+
+        Args:
+            lin_vel: input linear velocity command
+            ang_vel: input angular velocity command
+
+        Returns:
+            dx: change in x position
+            dy: change in y position
+            d-theta: change in heading
         """
+        # TODO: fill in the function
         pass
 
-    def robot_step_translational(self, x_vel: float, y_vel: float):
+    def robot_step_translational(self, x_vel: float, y_vel: float, ang_vel: float):
         """
-        Swerve-drive mode. Given x and y velocities, determine the robot's change in x, y, and heading and apply those changes in the environment.
+        Swerve-drive mode. Given x, y, and angular velocities, determine the robot's change in x, y, and heading and apply those changes in the environment.
+
+        Args:
+            x_vel: input x velocity command
+            y_vel: input y velocity command
+            ang_vel: input angular velocity command
+
+        Returns:
+            dx: change in x position
+            dy: change in y position
+            d-theta: change in heading
         """
+        # TODO: fill in the function
         pass
 
     def take_sensor_measurements(self):
         """
         Return noisy sensor readings of the environment at this timestep, including data from all sensors, in a table format.
         """
+        # TODO: fill in the function
         pass

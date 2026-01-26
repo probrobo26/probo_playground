@@ -106,13 +106,15 @@ class WheelEncoder(SensorInterface):
             angular_noise_ratio: proportional noise for angular
         """
         super().__init__(name, robot, interval)
-        self.LIN_NOISE = lin_noise  # m/s
-        self.ANG_NOISE = ang_noise  # rad/s
+        # TODO: save all noise constants as properties
+        self.LIN_NOISE = None  # m/s
+        self.ANG_NOISE = None  # rad/s
 
     def sample(self):
         """
         Sample the robot's linear and angular velocity.
         """
+        # TODO: fill in the function
         pass
 
 
@@ -149,13 +151,15 @@ class LandmarkPinger(SensorInterface):
             interval (float): period between measurements
         """
         super().__init__(name, robot, interval)
-        self.MAX_RANGE = max_range  # meters
-        self.RANGE_NOISE = range_noise  # meters
-        self.RANGE_PROP_NOISE = range_prop_noise
-        self.BEARING_NOISE = bearing_noise  # radians
+        # TODO: save max range and all noise constants as properties
+        self.MAX_RANGE = None  # meters
+        self.RANGE_NOISE = None  # meters
+        self.RANGE_PROP_NOISE = None
+        self.BEARING_NOISE = None  # radians
 
     def sample(self):
         """
         Reports noisy measurements of the bearing and range between the robot and all nearby landmarks.
         """
+        # TODO: fill in the function
         pass
