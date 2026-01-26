@@ -47,7 +47,12 @@ There are two branches on this repo:
 - `week1`: skeleton code for you to use as a starting point for building your own simulator.
 
 ## Running a Minimal Example
-A minimal example of a 2D mobile robot moving in an obstacle-laden environment is implemented in this repository for your reference. To run this example, in your terminal type:
+A minimal example of a 2D mobile robot moving in an obstacle-laden environment is implemented in this repository for your reference. To run this example, first clone this repository:
+
+`git@github.com:probrobo26/probo_playground.git`
+`cd probo_playground`
+
+Then type in your terminal:
 
 `python3 src/simulator.py`
 
