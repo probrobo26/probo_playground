@@ -1,0 +1,110 @@
+from dataclasses import dataclass
+import random
+
+
+@dataclass(unsafe_hash=True)
+class Position:
+    """
+    Represents an xy coordinate.
+    """
+
+    x: float = 0.0
+    y: float = 0.0
+
+    def to_dict(self):
+        return {
+            "x": self.x,
+            "y": self.y,
+        }
+
+    def to_string(self):
+        return f"X{self.x}Y{self.y}"
+
+
+@dataclass(unsafe_hash=True)
+class Pose:
+    """
+    Represents an xy coordinate with an associated heading.
+    """
+
+    pos: Position = Position()
+    theta: float = 0.0
+
+    def to_dict(self):
+        return {
+            "pos": self.pos.to_dict(),
+            "theta": self.theta,
+        }
+
+    def to_string(self):
+        return self.pos.to_string() + f"T{self.theta}"
+
+
+@dataclass(frozen=True)
+class Bounds:
+    """
+    Represents any bounded area, including obstacles such as walls or the environment itself. The edge of a Bounds instance is considered to be contained by that instance.
+    """
+
+    x_min: float
+    x_max: float
+    y_min: float
+    y_max: float
+
+    def within_x(self, x: float) -> bool:
+        return self.x_max >= x and self.x_min <= x
+
+    def within_y(self, y: float) -> bool:
+        return self.y_max >= y and self.y_min <= y
+
+    def within_bounds(self, pos: Position) -> bool:
+        return self.within_x(pos.x) and self.within_y(pos.y)
+
+    def to_dict(self):
+        return {
+            "x_min": self.x_min,
+            "x_max": self.x_max,
+            "y_min": self.y_min,
+            "y_max": self.y_max,
+        }
+
+    def to_string(self):
+        return f"X{self.x_min}-{self.x_max}Y{self.y_min}-{self.y_max}"
+
+
+@dataclass(frozen=True)
+class Landmark:
+    """
+    Represents an identifiable floating-point landmark.
+    """
+
+    pos: Position
+    id: int
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "pos": self.pos.to_dict(),
+        }
+
+    def to_string(self):
+        return f"L{self.id}" + self.pos.to_string()
+
+
+@dataclass(frozen=True)
+class BearingRange:
+    """
+    Represents the relationship between the robot and a landmark.
+    """
+
+    bearing: float
+    range: float
+
+    def to_dict(self):
+        return {
+            "bearing": self.bearing,
+            "range": self.range,
+        }
+
+    def to_string(self):
+        return f"B{self.bearing}R{self.range}"
