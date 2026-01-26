@@ -4,7 +4,7 @@
 
 ### 0.1 Welcome to the Simulator Assignment!
 
-This repository is meant to be a starting point for creativity and self-guided learning for the _Probabilistic Robotics_ course at Olin College of Engineering, providing an initial skeleton for a mobile robot simulation environment. Assignments throughout the course will revisit this simulator: building out more of its capabilities, utilizing it to investigate particular algorithms and methods, and providing a start for deep dive projects that push the class materials even further.
+This repository is meant to be a starting point for creativity and self-guided learning for the _Probabilistic Robotics_ course at Olin College of Engineering, providing an initial skeleton for a mobile robot simulation environment. Assignments throughout the course will revisit this simulator: building out more of  capabilities, utilizing it to investigate particular algorithitsms and methods, and providing a start for deep dive projects that push the class materials even further.
 
 ### 0.2 How To Use This Guide
 
@@ -38,7 +38,7 @@ Speaking of x and y, the environment probably shouldn't be infinite! Aside from 
 
 One final state variable to track is the simulator's current timestep. Presumably, the starting time will be zero, and time should "step" forward regularly (we'll do this a little later). Critically, the size of the timestep should be constant, so be sure that this is either a settable parameter or an unchanging value in your code.
 
-> Coding tip: All of these variables (robot pose, world dimensions, and time) are initialized in the Environment class for you already. Make sure you know which variable is tracking each value before moving on.
+> Coding tip: All of these variables (robot pose, world dimensions, and time) are passed as parameters to the `__init__()` function. Save each value as a property during initialization.
 
 ### 1.2 Static Environment Features
 
@@ -48,7 +48,7 @@ In robotic navigation, "landmarks" describe any unique, identifiable feature in 
 
 In the real world, the line between "obstacles" and "landmarks" is extremely fuzzy. I've separated the two ideas in my simulator for computational simplicity, but if you want to explore defining a data structure that represents both, you are welcome to explore this topic!
 
-> Coding tip: The obstacle and landmark lists have also been initialized for you already. They reference data classes defined in `src/utils.py`, so make sure to read that file to understand what data they store.
+> Coding tip: The obstacle and landmark lists are also passed as parameters to the `__init__()` function and must be saved as properties. The lists store unique data types defined in `src/utils.py`, so make sure to read that file to understand what data they store.
 
 ### 1.3 Moving Your Robot In The World
 
@@ -89,6 +89,8 @@ Whether are robot is acting or sensing, noise will be a factor in the process. W
 ### 2.2 Executing Robotic Actions
 
 Let's handle actions first! The primary action a robot takes is motion. This action alters the robot's state -- particularly, its position and heading. Our environment class already has a function to execute a small movement every timestep. But what kinds of motion instructions will our robots receive? In practice, robots are often executing velocity commands, which we'll need to apprxomately integrate using the environment's timestep to convert it into dx, dy, and d-theta values.
+
+> Coding tip: To execute actions in the world, the robot will need to reference an existing environment. Luckily, an environment is passed to the `__init__()` function for you -- make sure to save it as a property before moving on.
 
 If the robot in question can move omnidirectionally (rotary-wing drones, swerve-drive robots), it directly executes x velocity, y velocity, and angular velocity commands. However, many mobile robots (fixed-wing drones, autonomous boats, and self-driving cars) are only capable of executing linear velocity and angular velocity commands. It's up to you which type of command you'd like to give to your robot, but either way, the robot must a function that transforms those velocities into dx, dy, and d-theta values that can be passed to the environment for execution. Keep in mind that the velocity commands must be approximately integrated using the environment's constant timestep size.
 
@@ -155,7 +157,11 @@ Once the sensor has taken noisy measurements from every landmark, the `sample()`
 
 > File: `src/robot.py`
 
-Now that we've designed a few sensors, let's equip them to our robot. First, instantiate one of each sensor in the robot's `sensors` list. Next, loop through each item of the `sensors` list in `take_sensor_measurements()`. For each sensor, determine if sufficient time has passed for the sensor to resample the environment using its interval, time of last measurement, and the environment's current time. If this is the case, call the sensor's `sample()` function and save the output! Finally, outside the loop, return all samples in a table format similar to the environment class's `take_state_snapshot()` function.
+Now that we've designed a few sensors, let's equip them to our robot. First, instantiate one of each sensor in the robot's `sensors` list.
+
+> Coding tip: If you haven't already, make a sensors property in the `__init__()` and initialize it as an empty list. Then, instantiate your sensors in that list!
+
+Next, loop through each item of the `sensors` list in `take_sensor_measurements()`. For each sensor, determine if sufficient time has passed for the sensor to resample the environment using its interval, time of last measurement, and the environment's current time. If this is the case, call the sensor's `sample()` function and save the output! Finally, outside the loop, return all samples in a table format similar to the environment class's `take_state_snapshot()` function.
 
 ## 4. Putting It All Together In A Main File
 
