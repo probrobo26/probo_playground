@@ -165,6 +165,12 @@ Next, loop through each item of the `sensors` list in `take_sensor_measurements(
 
 ## 4. Putting It All Together In A Main File
 
-### 4.1 Reading Input Files
+> File: `src/main.py`
 
-### 4.2 Writing Output Files
+### 4.1 Setting Up A Test Environment
+
+You now have all of the necessary components for running this simulator! You can view the skeleton and TODOs for this last section in the main file of the repository. The first step here is to design a test environment. To do this, fill in the variables that are passed to the environment instance with whatever values you see fit. Make sure to test out a mix of obstacles and landmarks!
+
+### 4.2 
+
+[Under construction]
