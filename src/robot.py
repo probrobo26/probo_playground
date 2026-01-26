@@ -5,6 +5,7 @@ The Robot class models the robotic agent that explores the world. The robot is r
 """
 
 from environment import Environment
+from sensors import SensorInterface
 
 
 class Robot:
@@ -13,6 +14,7 @@ class Robot:
 
     Attributes:
         env: the environment this robot is operating in
+        DT: the environment's constant timestep size
         sensors: list of all robot sensors
     """
 
@@ -23,15 +25,17 @@ class Robot:
         Args:
             env: the environment this robot is operating in
         """
+        self.env = env
+        self.DT = self.env.DT
+        self.sensors = []
+
+    def robot_step_differential(self, lin_vel: float, ang_vel: float):
+        """
+        Differential-drive mode. Given forward linear and angular velocities, determine the robot's change in x, y, and heading and apply those changes in the environment.
+        """
         pass
 
-    def agent_step_differential(self, lin_vel: float, ang_vel: float):
-        """
-        Differential-drive motion. Given forward linear and angular velocities, determine the robot's change in x, y, and heading and apply those changes in the environment.
-        """
-        pass
-
-    def agent_step_translational(self, x_vel: float, y_vel: float):
+    def robot_step_translational(self, x_vel: float, y_vel: float):
         """
         Swerve-drive mode. Given x and y velocities, determine the robot's change in x, y, and heading and apply those changes in the environment.
         """

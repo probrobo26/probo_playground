@@ -76,21 +76,59 @@ In addition to changing data, it may also be useful to export the static environ
 
 ## 2. Designing the Robot Class
 
-### 2.n Unit Testing the Robot Class
+> File: `src/robot.py`
+
+### 2.1 Think-Act-Sense In A Noisy World
+
+As stated before, our simulated robot isn't going to do much in the way of thinking (for now). However, it will be acting and it will be sensing! Just now, we defined an environment with alterable states and measurable features. The robot we are about to model will take actions that modify the environment, and it will sense/measure/sample features of the environment in an attempt to learn more about it.
+
+Whether are robot is acting or sensing, noise will be a factor in the process. We'll be talking about noise quite a lot in this class, but here we'll learn to model and apply noise programatically. For simplicity, we'll primarily be using [Gaussian noise](https://en.wikipedia.org/wiki/Normal_distribution) in this simulator. Gaussian distributions take in two parameters: mean, which is the value that the distribution is centered around; and standard deviation, which describes the spread of the distribution. When it comes to designing noise for sensors, the mean will generally be set to the ground truth value that is being measured, while the standard deviation will be a property of the sensor itself.
+
+[Python's random library provides a built-in Gaussian function](https://www.geeksforgeeks.org/python/random-gauss-function-in-python/), which we'll use anytime a value needs some noise!
+
+### 2.2 Executing Robotic Actions
+
+Let's handle actions first! The primary action a robot takes is motion. This action alters the robot's state -- particularly, its position and heading. Our environment class already has a function to execute a small movement every timestep. But what kinds of motion instructions will our robots receive? In practice, robots are often executing velocity commands, which we'll need to apprxomately integrate using the environment's timestep to convert it into dx, dy, and d-theta values.
+
+If the robot in question can move omnidirectionally (rotary-wing drones, swerve-drive robots), it directly executes x velocity, y velocity, and angular velocity commands. However, many mobile robots (fixed-wing drones, autonomous boats, and self-driving cars) are only capable of executing linear velocity and angular velocity commands. It's up to you which type of command you'd like to give to your robot, but either way, the robot must a function that transforms those velocities into dx, dy, and d-theta values that can be passed to the environment for execution. Keep in mind that the velocity commands must be approximately integrated using the environment's constant timestep size.
+
+> Coding tip: For an omnidirectional robot, fill in `robot_step_translational()`. For a differential-drive robot, fill in `robot_step_differential()`. Both functions should end by passing their resultant dx, dy, and d-theta to the environment's `robot_step()` function.
+
+Noise isn't just a feature of sensors -- it's present in actuators as well, whether that's wheel slippage, jittery command signals, or environmental disturbances that cause the robot's actual motion to differ from its intended motion. We can model this in our function by immediately setting the input velocities to samples of Gaussians centered on the ground truth input velocity. Choosing the standard deviation value is a design decision that I leave to you!
+
+### 2.3 Sampling the Environment With Sensors
+
+Sensing covers a vast set of capabilities, but there are two broad categories that generalize what sensors measure: proprioceptive sensors and exteroceptive sensors.
+
+Proprioceptive sensors measure a robot's internal state. For example, wheel encoders measure how fast a robot's wheels are turning, IMUs measure a robot's acceleration, and rotary potentiometers measure the angle of a robot's joint. These sensors are most useful for maintaining internal states with controllers. While they can also be used to make estimates of a robot's relationship to the rest of the world, they cannot directly observe that relationship.
+
+Exteroceptive sensors measure the world and relate the robot to it. For example, cameras can measure the robot's distance from other objects, GPS measures the robot's position in the world, and magnetometers measure the robot's heading relative to the magnetic North Pole. These sensors are useful because they provide grounded (if noisy) information about where the robot is.
+
+The robot class possesses a list of sensors. We're going to define our sensor classes in a separate file, and our robot will possess instances of each sensor. There's no code to write here, but take note of the function that will eventually take readings from all sensors.
+
+> Coding tip: The function we're referring to is called `take_sensor_measurements()`. We'll fill it in after making our sensors!
 
 ## 3. Designing Sensor Classes
 
-### 3.1 Proprioceptive and Exteroceptive Sensors
+> File: `src/sensors.py`
 
-### 3.n Unit Testing the Environment Class
+### 3.1 The Sensor Interface Abstract Class
 
-## 4. Utilities, Visualizations, and Beyond
+Provided for you is the `SensorInterface` class, which is an Abstract Base Class (ABC). It defines a set of required variables and functions that all other sensor classes must have. Whenever you make a new sensor class, it should inherit the SensorInterface class, which will require that the child class possesses its variables and functions.
 
-### 5.1 Data Classes for Common Data Structures
 
-### 5.2 Visualizing the Simulation Environment
+According to SensorInterface, all sensors must possess a name, a reference to the robot it belongs to, a sampling interval, and the time of its last measurement. The last two properties are the most interesting, as certain sensors take measurements much more frequently than others!
 
-### 5.3 Creating a requirements.txt file
+> Coding tip: Check out `SensorInterface` class! All properties have getters, but only `last_meas_t` has a setter, because it's the only one that changes.
+
+This guide will walk you through the implementation of one proprioceptive sensor and one exteroceptive sensor. However, many other sensors are possible! Some ideas for other sensors: IMU, GPS, LiDAR, visual odometry...
+
+### 3.2 Designing An Odometry Sensor
+
+### 3.3 Designing a Landmark Pinger
+
+### 3.4 Robotic Sampling With Sensors
+
 
 ## 5. Reading Input Files and Writing Output Files
 
