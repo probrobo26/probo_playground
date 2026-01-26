@@ -97,14 +97,16 @@ class BearingRange:
     Represents the relationship between the robot and a landmark.
     """
 
+    landmark_id: float
     bearing: float
     range: float
 
     def to_dict(self):
         return {
+            "landmark_id": self.landmark_id,
             "bearing": self.bearing,
             "range": self.range,
         }
 
     def to_string(self):
-        return f"B{self.bearing}R{self.range}"
+        return f"LM{self.landmark_id}B{self.bearing}R{self.range}"

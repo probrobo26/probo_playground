@@ -112,7 +112,7 @@ The robot class possesses a list of sensors. We're going to define our sensor cl
 
 > File: `src/sensors.py`
 
-### 3.1 The Sensor Interface Abstract Class
+### 3.1 The Sensor Interface Class
 
 Provided for you is the `SensorInterface` class, which is an Abstract Base Class (ABC). It defines a set of required variables and functions that all other sensor classes must have. Whenever you make a new sensor class, it should inherit the SensorInterface class, which will require that the child class possesses its variables and functions.
 
@@ -123,12 +123,41 @@ According to SensorInterface, all sensors must possess a name, a reference to th
 
 This guide will walk you through the implementation of one proprioceptive sensor and one exteroceptive sensor. However, many other sensors are possible! Some ideas for other sensors: IMU, GPS, LiDAR, visual odometry...
 
-### 3.2 Designing An Odometry Sensor
+### 3.2 Designing A Wheel Encoder
+
+We'll start by designing a wheel encoder. Wheel encoders measure the speed of the robot (linear/angular or x/y/angular, depending on which type of motor command you chose!). You can see the template for the class in `src/sensors.py`. The class's `__init__()` function is already complete, but you are going to fill in the `sample()` function yourself!
+
+> Coding tip: Check out the `WheelEncoder` class! The `__init__()` function provides some default values for the sensor's sampling interval and noise constants. Feel free to pass in different values when instantiating the class, but keep these defaults as they provide a realistic reference!
+
+> Coding tip: The `WheelEncoder` `__init__()` function is written for a robot with a differential-drive motion style. If your robot is instead doing omnidirectional style, be sure to create noise constants for each command velocity (x, y, angular) to replace the existing ones.
+
+To sample the robot's velocities, access the last executed motor commands using the class's `robot` property. Then, use the Python `random.gauss()` function to sample a distribution with the means centered at the true motor commands and the standard deviations set to the class's noise constants.
+
+> Coding tip: Each sensor should sample a different distribution for each unique value the sensor is measuring. For a differential-drive wheel encoder, this refers to linear and angular velocity. For a omnidirectional wheel encoder, this refers to x velocity, y velocity, and angular velocity. Remember to consider the units of your noise -- an error of 0.5 is much more dramatic in radians than in meters!
+
+Once the sensor has taken noisy measurements, the `sample()` function should return the values. Later on, we'll put all `sample()` function calls in the robot's `take_sensor_measurements()` function, which will utilize the returned values!
 
 ### 3.3 Designing a Landmark Pinger
 
-### 3.4 Robotic Sampling With Sensors
+For our exteroceptive sensor, we'll design a landmark pinger. This sensor is abstracting a few different real-life sensors: cameras with feature extraction capabilities, acoustic transducers, and radio beacons all get at the general idea that a robot should be able to sense its bearing and range to a landmark of a known location. Our simulated environment has landmarks of known locations, so this is a good sensor for our robot to have!
 
+Just like the wheel encoder, you can see the template for the class in `src/sensors.py`. The class's `__init__()` function is already complete, but you are going to fill in the `sample()` function yourself!
+
+To sample the robot's bearing and range to all landmarks, access the robot's environment property and call the `get_proximity_to_landmarks()` function. Then, use Python `random.gauss()` function to sample a distribution with the means centered at the true values and the standard deviations set to the class's noise constants. Remember to save the measurements for every landmark!
+
+> Coding tip: Unlike the measurements we've done so far, the landmark pinger's range measurement has a proportional noise component to its standard deviation. This means that range measurements will be noisier the further away the robot is from the landmark! To factor this in, sum the constant noise component with the product of the proportional noise component and the true range value.
+
+Also, note that the landmark pinger has one additional property: maximum range. If the robot is outside the maximum range for a particular landmark, it should log empty or infinite values for that landmark's bearing-range measurement rather than sampling the ground truth value.
+
+Once the sensor has taken noisy measurements from every landmark, the `sample()` function should return the values. Later on, we'll put all `sample()` function calls in the robot's `take_sensor_measurements()` function, which will utilize the returned values!
+
+### 3.4 Aggregate Sampling On Intervals
+
+> File: `src/robot.py`
+
+Now that we've designed a few sensors, let's equip them to our robot. First, instantiate one of each sensor in the robot's `sensors` list. Next, loop through each item of the `sensors` list in `take_sensor_measurements()`. For each sensor, determine if sufficient time has passed for the sensor to resample the environment using its interval, time of last measurement, and the environment's current time. If this is the case, call the sensor's `sample()` function and save the output! Finally, outside the loop, return all samples in a table format similar to the environment class's `take_state_snapshot()` function.
+
+## 4. Putting It All Together In A Main File
 
 ## 5. Reading Input Files and Writing Output Files
 

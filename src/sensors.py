@@ -9,6 +9,7 @@ Proprioceptive sensors measure the robot's relationship to its past states. This
 """
 
 from abc import ABC, abstractmethod
+from math import pi
 
 
 class SensorInterface(ABC):
@@ -72,50 +73,9 @@ class SensorInterface(ABC):
         pass
 
 
-class GPS(SensorInterface):
+class WheelEncoder(SensorInterface):
     """
-    This class represents a GPS sensor that measures the position of the robot in 2D space.
-
-    Attributes:
-        name: string identifier
-        robot: reference robot
-        interval: period between measurements
-        last_meas_t: time of last measurement
-        GPS_NOISE: absolute noise for stdev
-    """
-
-    def __init__(
-        self,
-        robot,
-        name,
-        interval,
-        x_noise,
-        y_noise,
-    ):
-        """
-        Initialize an instance of the GPS class.
-
-        Args:
-            name (str): reference identifier
-            robot (Robot): reference robot
-            interval (float): period between measurements
-            x_noise (float): constant noise for x position stdev
-            y_noise (float): constant noise for y position stdev
-        """
-        super().__init__(name, robot, interval)
-        self.X_NOISE = x_noise
-        self.Y_NOISE = y_noise
-
-    def sample(self):
-        """
-        Sample the robot's x position and y position.
-        """
-        pass
-
-
-class Odometry(SensorInterface):
-    """
-    This class represents an odometry sensor that measures the robot's velocity based on wheel encoders.
+    This class represents a wheel encoder set that measures the robot's motor speeds.
     Reports noisy estimates of linear and angular velocities.
 
     Attributes:
@@ -125,38 +85,77 @@ class Odometry(SensorInterface):
         last_meas_t: time of last measurement
         LIN_NOISE: absolute noise for linear velocity stdev
         ANG_NOISE: absolute noise for angular velocity stdev
-        LINEAR_NOISE_RATIO: proportional noise for linear velocity stdev
-        ANGULAR_NOISE_RATIO: proportional noise for angular velocity stdev
     """
 
     def __init__(
         self,
         robot,
-        name,
-        interval,
-        lin_noise,
-        ang_noise,
-        linear_noise_ratio,
-        angular_noise_ratio,
+        name="wheel_encoder",
+        interval=0.1,
+        lin_noise=0.05,
+        ang_noise=0.03,
     ):
         """
-        Initialize an instance of the Odometry class.
+        Initialize an instance of the WheelEncoder class.
 
         Args:
-            robot (Robot): reference robot
-            name (str): reference identifier
-            interval (float): period between measurements
-            linear_noise_ratio (float): proportional noise for linear velocity
-            angular_noise_ratio (float): proportional noise for angular
+            robot: reference robot
+            name: reference identifier
+            interval: period between measurements
+            linear_noise_ratio: proportional noise for linear velocity
+            angular_noise_ratio: proportional noise for angular
         """
         super().__init__(name, robot, interval)
-        self.LIN_NOISE = lin_noise
-        self.ANG_NOISE = ang_noise
-        self.LINEAR_NOISE_RATIO = linear_noise_ratio
-        self.ANGULAR_NOISE_RATIO = angular_noise_ratio
+        self.LIN_NOISE = lin_noise  # m/s
+        self.ANG_NOISE = ang_noise  # rad/s
 
     def sample(self):
         """
         Sample the robot's linear and angular velocity.
+        """
+        pass
+
+
+class LandmarkPinger(SensorInterface):
+    """
+    This class represents a sensor that measures the range and bearing between the robot and the floating-point landmarks on the map. In practice, this sensor could be a ToF sensor, a node in a network of beacons, or even a camera.
+
+    Attributes:
+        name: reference identifier
+        robot (Robot): reference robot
+        interval (float): period between measurements
+        MAX_RANGE (int): maximum distance from a beacon for it to be visible
+        RANGE_NOISE (float): absolute noise for range stdev
+        RANGE_NOISE_RATIO (float): porportional noise for range stdev
+        BEARING_NOISE (float): absolute noise for bearing stdev
+    """
+
+    def __init__(
+        self,
+        robot,
+        name="landmark_pinger",
+        interval=1.0,
+        range_noise=0.5,
+        range_prop_noise=0.05,
+        bearing_noise=pi / 6,
+        max_range=10.0,
+    ):
+        """
+        Initialize an instance of the LandmarkPinger class.
+
+        Args:
+            name (str): reference identifier
+            robot (Robot): reference robot
+            interval (float): period between measurements
+        """
+        super().__init__(name, robot, interval)
+        self.MAX_RANGE = max_range  # meters
+        self.RANGE_NOISE = range_noise  # meters
+        self.RANGE_PROP_NOISE = range_prop_noise
+        self.BEARING_NOISE = bearing_noise  # radians
+
+    def sample(self):
+        """
+        Reports noisy measurements of the bearing and range between the robot and all nearby landmarks.
         """
         pass
