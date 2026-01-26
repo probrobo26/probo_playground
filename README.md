@@ -53,7 +53,11 @@ A minimal example of a 2D mobile robot moving in an obstacle-laden environment i
 
 `cd probo_playground`
 
-Then type in your terminal:
+Then install its dependencies:
+
+`pip install -r requirements.txt`
+
+Finally, type in your terminal:
 
 `python3 src/simulator.py`
 
