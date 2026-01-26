@@ -159,8 +159,6 @@ Now that we've designed a few sensors, let's equip them to our robot. First, ins
 
 ## 4. Putting It All Together In A Main File
 
-## 5. Reading Input Files and Writing Output Files
+### 4.1 Reading Input Files
 
-### 5.1 Useful File Structures for Input Data
-
-### 5.2 Useful File Structures for Output Data
+### 4.2 Writing Output Files
